@@ -4,4 +4,4 @@
 
 网页查看: [中国干部职级](https://govlevel.unic.deno.net/)
 
-![screenshot](./gov-level.jpeg)
+![screenshot](./gov-level.png)
