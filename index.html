@@ -1,0 +1,316 @@
+import React, { useState } from 'react';
+import { ChevronDown, ChevronUp, Star, BookOpen, TrendingUp, Award, User, MapPin, Landmark } from 'lucide-react';
+
+const RANKS = [
+  {
+    id: 0,
+    level: "正国级 (National Leader)",
+    title: "中共中央总书记、国家主席、国务院总理",
+    engTitle: "General Secretary / President / Premier",
+    examples: "中央政治局常委（通常为7人）",
+    color: "#B91C1C", // Red for top leadership
+    power: "国家最高权力的核心。负责党和国家的最高战略决策、外交方针、国防及重大经济政策。决定国家的前途与命运。",
+    requirements: "极其漫长的政治生涯历练，通常曾在多个关键省份（如上海、浙江、福建等）或重要中央部委担任一把手，具备卓越的政治智慧和治国理政能力。",
+    promotion: "由中央全会选举产生，处于权力的顶峰。",
+    badge: "特"
+  },
+  {
+    id: 0.5,
+    level: "副国级 (Deputy National Leader)",
+    title: "中央政治局委员、国务院副总理",
+    engTitle: "Politburo Member / Vice Premier",
+    examples: "北京市委书记、上海市委书记、中央组织部部长",
+    color: "#B91C1C",
+    power: "参与国家最高层面的决策。通常兼任重要直辖市（如北京、上海、重庆、天津）的一把手或中央关键部门（如中组部、中宣部）负责人。",
+    requirements: "通常具有正省部级岗位的丰富经验，且政绩卓著。政治可靠性要求极高。",
+    promotion: "从正省部级官员中选拔，通常先进入中央政治局。",
+    badge: "特"
+  },
+  {
+    id: 1,
+    level: "正省部级 (Provincial-Ministerial Level)",
+    title: "省委书记、省长、部长",
+    engTitle: "Provincial Party Secretary / Governor / Minister",
+    examples: "四川省委书记、四川省省长、教育部部长",
+    color: "#1E3A8A", // Deep Blue
+    power: "辖区内的最高决策者。负责全省（如四川约8300万人口）的政治、经济、社会发展。拥有重大项目审批权、副省级以下人事任免建议权。",
+    requirements: "一般要求具有两届以上副省部级任职经历。极高的政治判断力、执行力和宏观驾驭能力。中央候补委员或委员是常态。",
+    promotion: "由中央直接任命。通常从其他省份的省长、中央部委首长或本省省长升任。",
+    badge: "1"
+  },
+  {
+    id: 2,
+    level: "副省部级 (Sub-Provincial Level)",
+    title: "副省长、省委常委",
+    engTitle: "Vice Governor / Provincial Standing Committee Member",
+    examples: "四川省常务副省长、成都市委书记（高配）、成都市市长",
+    color: "#1E3A8A",
+    power: "分管某一特定领域（如教育、公安、工业）。协助省长工作，或作为省委常委参与全省重大决策。注：成都市作为副省级城市，其市委书记、市长均为副省级。",
+    requirements: "在正厅局级岗位上实绩突出，通常需要跨部门、跨地区的历练。年龄通常在50岁以上。",
+    promotion: "从正厅级干部中选拔，或中央部委司局长空降。是进入高级领导层的关键门槛。",
+    badge: "2"
+  },
+  {
+    id: 3,
+    level: "正厅局级 (Department-Bureau Level)",
+    title: "厅长、地级市市长",
+    engTitle: "Director General / Mayor",
+    examples: "四川省教育厅厅长、绵阳市委书记、成都市各区区委书记（部分高配）",
+    color: "#374151",
+    power: "主持省级职能部门（如省发改委）或地级市（如绵阳、宜宾）的全面工作。拥有极大的行政审批权和辖区内的人事任免权。",
+    requirements: "丰富的基层治理经验或专业领域深耕。通常要求本科以上学历，中共党员，且经过党校中青班培训。",
+    promotion: "主要从副厅级干部提拔。考核指标包括GDP增长、社会稳定、重大项目落地等硬性指标。",
+    badge: "3"
+  },
+  {
+    id: 4,
+    level: "副厅局级 (Deputy Dept-Bureau Level)",
+    title: "副厅长、副市长",
+    engTitle: "Deputy Director General / Vice Mayor",
+    examples: "四川省公安厅副厅长、乐山市副市长、成都市教育局局长",
+    color: "#374151",
+    power: "协助厅长或市长分管具体业务（如分管卫生的副市长）。在分管领域内有较大的话语权和执行权。",
+    requirements: "正县处级岗位任职满3年以上。需要在多个岗位轮岗锻炼，具备综合协调能力。",
+    promotion: "从正县处级优秀干部中选拔。可以通过公开选拔考试或组织考察晋升。",
+    badge: "4"
+  },
+  {
+    id: 5,
+    level: "正县处级 (County-Division Level)",
+    title: "县长、县委书记、处长",
+    engTitle: "County Head / Division Head",
+    examples: "双流区区长、金堂县县委书记、省教育厅高教处处长",
+    color: "#4B5563",
+    power: "“郡县治，天下安”。作为基层政权的“一把手”，统筹全县经济民生。权力集中，责任巨大，是连接上层决策与基层执行的核心枢纽。",
+    requirements: "具有5年以上工龄和2年以上基层工作经历。通常要求大学专科以上文化程度。",
+    promotion: "从副县处级晋升。此级别是仕途的分水岭，许多官员在此级别退休。",
+    badge: "5"
+  },
+  {
+    id: 6,
+    level: "副县处级 (Deputy County Level)",
+    title: "副县长、副处长",
+    engTitle: "Deputy County Head",
+    examples: "郫都区副区长、省直机关副处长、街道党工委书记（副处配置）",
+    color: "#4B5563",
+    power: "分管县域内的具体工作（城建、交通、文旅等）。具体落实县委县政府的决策。",
+    requirements: "正科级任职满3年。具有较强的执行力和专业能力。",
+    promotion: "由正乡科级晋升，是跨越“科级天花板”的关键一步。",
+    badge: "6"
+  },
+  {
+    id: 7,
+    level: "正乡科级 (Township-Section Level)",
+    title: "乡长、科长",
+    engTitle: "Township Head / Section Chief",
+    examples: "某镇党委书记、区教育局人事科科长、派出所所长",
+    color: "#6B7280",
+    power: "最基层的决策者。直接面对群众，处理征地拆迁、信访维稳、乡村振兴等具体繁杂事务。",
+    requirements: "副科级任职满2年。需要极强的抗压能力和群众工作能力。",
+    promotion: "从副乡科级晋升。竞争基数大，晋升难度开始陡增。",
+    badge: "7"
+  },
+  {
+    id: 8,
+    level: "副乡科级 (Deputy Township Level)",
+    title: "副乡长、副科长",
+    engTitle: "Deputy Township Head",
+    examples: "某镇副镇长、区统计局副科长",
+    color: "#6B7280",
+    power: "协助乡镇长或科长工作。通常是年轻干部走上领导岗位的起点。",
+    requirements: "科员级任职满3年。",
+    promotion: "从科员晋升，通常通过内部竞争上岗或组织考察。",
+    badge: "8"
+  },
+  {
+    id: 9,
+    level: "一级/二级科员 (Clerk Level)",
+    title: "公务员、办事员",
+    engTitle: "Clerk / Staff Member",
+    examples: "刚入职的选调生、街道办工作人员",
+    color: "#9CA3AF",
+    power: "具体办事人员。起草文件、整理档案、窗口服务、执行上级指令。无决策权，主要是执行层。",
+    requirements: "通过国家公务员考试（国考）或省考。学历通常要求本科及以上。",
+    promotion: "依年限和考核晋升。表现优秀者可提拔为副科级领导职务，或晋升职级（如四级主任科员）。",
+    badge: "9"
+  }
+];
+
+export default function SichuanOfficialHierarchy() {
+  const [activeRank, setActiveRank] = useState(null);
+
+  const toggleRank = (id) => {
+    setActiveRank(activeRank === id ? null : id);
+  };
+
+  return (
+    <div className="min-h-screen bg-[#FAF8F5] text-[#1F2937] font-serif p-2 md:p-8 selection:bg-[#1E3A8A] selection:text-white">
+      {/* 报纸顶部容器 */}
+      <div className="max-w-4xl mx-auto bg-[#FAF8F5] shadow-xl border border-gray-200 min-h-screen relative overflow-hidden">
+        
+        {/* Masthead (刊头) - 保持部分英文以维持报纸美学 */}
+        <header className="px-6 py-8 md:px-12 text-center relative z-10">
+          <div className="border-b-4 border-black mb-1"></div>
+          <div className="border-b border-black mb-6"></div>
+          
+          <div className="flex justify-between items-end mb-2 text-xs md:text-sm font-bold font-sans text-gray-500 uppercase tracking-widest">
+            <span>Official Ranking System</span>
+            <span>Est. 1949</span>
+            <span>Vol. CN-51</span>
+          </div>
+
+          <h1 className="text-5xl md:text-7xl font-black tracking-tight leading-none mb-4 font-serif text-[#111827]">
+            中国行政级别图谱
+          </h1>
+          
+          <div className="flex justify-center items-center gap-4 text-sm font-bold text-[#1E3A8A] uppercase tracking-widest mb-6">
+             <span className="flex items-center gap-1"><MapPin size={14} /> 四川观察版</span>
+             <span>•</span>
+             <span>Sichuan Edition</span>
+             <span>•</span>
+             <span>2024 Special Report</span>
+          </div>
+
+          <div className="border-t border-black mt-1"></div>
+          <div className="border-t-4 border-black mt-1"></div>
+        </header>
+
+        {/* 导语区 (Lead Story) */}
+        <section className="px-6 md:px-12 py-8 grid grid-cols-1 md:grid-cols-3 gap-8 border-b border-gray-300">
+          <div className="md:col-span-2">
+            <h2 className="text-3xl font-black italic mb-4 leading-tight text-[#111827]">
+              读懂中国官员晋升体系：从科员到国级
+            </h2>
+            <div className="text-justify text-[15px] leading-relaxed text-gray-700 font-serif">
+              <span className="float-left text-6xl font-black text-[#1E3A8A] mr-3 mt-[-10px] leading-[0.8]">官</span>
+              员层级不仅是权力的分配，更是责任的界定。在中国，行政级别呈严格的金字塔结构。对于四川省的8300万人口而言，这一体系决定了政策如何从北京的中南海传导至成都平原的田间地头。从最基层的乡镇科员，到主政一方的封疆大吏，再到国家领导人，每一级晋升都通过严格的绩效考核与政治审查。本文将以四川为例，解析这一庞大而精密的政治机器。
+            </div>
+          </div>
+          <div className="md:col-span-1 bg-gray-100 p-4 border border-gray-200">
+            <h3 className="font-bold uppercase tracking-widest text-xs mb-2 border-b border-gray-400 pb-1">核心术语 / Terminology</h3>
+            <ul className="text-sm space-y-2 font-serif text-gray-600">
+              <li><span className="font-bold text-black">部 / 委 (Ministry)</span>: 中央国家机关</li>
+              <li><span className="font-bold text-black">厅 / 局 (Department)</span>: 省级职能部门</li>
+              <li><span className="font-bold text-black">处 / 县 (Division)</span>: 承上启下的枢纽</li>
+              <li><span className="font-bold text-black">科 / 乡 (Section)</span>: 基层执行单元</li>
+              <li className="text-xs italic mt-2 text-gray-400">点击下方条目查看详细职权</li>
+            </ul>
+          </div>
+        </section>
+
+        {/* 核心内容：垂直时间轴/列表 */}
+        <main className="px-4 md:px-12 py-8">
+          <div className="relative">
+            {/* 垂直连接线 (装饰性) */}
+            <div className="absolute left-4 md:left-[23px] top-0 bottom-0 w-[1px] bg-gray-300 z-0 border-l border-dashed border-gray-400"></div>
+
+            {RANKS.map((rank) => (
+              <article key={rank.id} className="relative mb-8 pl-12 md:pl-16 group">
+                {/* 序号徽章 */}
+                <div 
+                  className={`absolute left-0 md:left-2 top-1 w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-[#FAF8F5] flex items-center justify-center font-bold font-serif text-sm md:text-lg z-10 transition-colors duration-300 shadow-sm
+                    ${activeRank === rank.id ? 'bg-[#1E3A8A] text-white' : 'bg-gray-200 text-gray-500 group-hover:bg-gray-300'}
+                  `}
+                >
+                  {rank.badge}
+                </div>
+
+                {/* 卡片主体 */}
+                <div 
+                  onClick={() => toggleRank(rank.id)}
+                  className={`cursor-pointer transition-all duration-500 ease-in-out border-b border-gray-300 pb-6
+                    ${activeRank === rank.id ? 'opacity-100' : 'opacity-80 hover:opacity-100'}
+                  `}
+                >
+                  {/* 标题栏 */}
+                  <div className="flex flex-col md:flex-row md:items-baseline md:justify-between gap-2 mb-2">
+                    <h3 className={`text-2xl md:text-3xl font-black font-serif leading-tight
+                      ${activeRank === rank.id ? rank.id <= 0.5 ? 'text-[#B91C1C]' : 'text-[#1E3A8A]' : 'text-[#111827] group-hover:text-[#1E3A8A]'}
+                    `}>
+                      {rank.level}
+                    </h3>
+                    <span className="text-xs font-sans font-bold text-gray-400 uppercase tracking-widest">
+                      {rank.engTitle}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2 mb-4 text-gray-600 font-serif italic text-sm md:text-base">
+                     <span className="font-bold not-italic text-black">典型职务:</span> {rank.examples}
+                  </div>
+
+                  {/* 展开内容区 */}
+                  <div className={`overflow-hidden transition-all duration-700 ease-in-out ${activeRank === rank.id ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                    <div className="bg-white p-6 border border-gray-200 shadow-sm relative mt-2">
+                      {/* 装饰性双线 */}
+                      <div className="absolute top-1 left-1 right-1 h-1 border-t border-b border-gray-100"></div>
+                      
+                      {/* 多栏布局内容 */}
+                      <div className="newspaper-columns md:columns-2 gap-8 text-justify text-sm md:text-[15px] leading-relaxed text-gray-700 pt-4">
+                        
+                        <div className="mb-6 break-inside-avoid">
+                          <h4 className="font-sans font-bold text-xs uppercase tracking-widest text-[#1E3A8A] mb-2 border-b border-gray-200 pb-1 flex items-center gap-2">
+                            <Award size={14} /> 核心职权 / Authority
+                          </h4>
+                          <p>{rank.power}</p>
+                        </div>
+
+                        <div className="mb-6 break-inside-avoid">
+                          <h4 className="font-sans font-bold text-xs uppercase tracking-widest text-[#1E3A8A] mb-2 border-b border-gray-200 pb-1 flex items-center gap-2">
+                            <User size={14} /> 任职要求 / Requirements
+                          </h4>
+                          <p>{rank.requirements}</p>
+                        </div>
+
+                        <div className="mb-0 break-inside-avoid">
+                          <h4 className="font-sans font-bold text-xs uppercase tracking-widest text-[#1E3A8A] mb-2 border-b border-gray-200 pb-1 flex items-center gap-2">
+                            <TrendingUp size={14} /> 晋升路径 / Promotion
+                          </h4>
+                          <p>{rank.promotion}</p>
+                        </div>
+
+                      </div>
+                    </div>
+                    
+                    {/* 底部折叠按钮提示 */}
+                    <div className="text-center mt-2">
+                      <button className="text-xs uppercase tracking-widest text-gray-400 hover:text-[#1E3A8A] flex items-center justify-center gap-1 w-full">
+                        <ChevronUp size={12} /> 收起详情
+                      </button>
+                    </div>
+                  </div>
+
+                   {/* 未展开时的“阅读更多”提示 */}
+                   {activeRank !== rank.id && (
+                    <div className="mt-2 flex items-center text-xs font-sans font-bold text-gray-400 uppercase tracking-widest group-hover:text-[#1E3A8A] transition-colors">
+                      <span>查看详细职能报告</span>
+                      <ChevronDown size={14} className="ml-1" />
+                    </div>
+                  )}
+
+                </div>
+              </article>
+            ))}
+          </div>
+        </main>
+
+        {/* 报纸页脚 */}
+        <footer className="px-6 md:px-12 py-8 bg-[#F3F4F6] border-t-2 border-black mt-8 text-center">
+          <div className="flex flex-col md:flex-row justify-center items-center gap-4 text-xs font-sans text-gray-500 uppercase tracking-widest">
+            <span>© The Sichuan Gazette</span>
+            <span className="hidden md:inline">•</span>
+            <span>Policy Interpretation Unit</span>
+            <span className="hidden md:inline">•</span>
+            <span>Chengdu, China</span>
+          </div>
+          <p className="mt-4 font-serif italic text-gray-400 text-sm">
+            数据来源：中国公务员法及四川省各级政府公开组织架构信息。部分晋升路径为一般规律总结，仅供参考。
+          </p>
+        </footer>
+
+      </div>
+      
+      {/* 底部装饰：模拟桌子纹理或阴影 */}
+      <div className="fixed bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-gray-200 to-transparent pointer-events-none"></div>
+    </div>
+  );
+}
